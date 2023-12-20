@@ -29,7 +29,7 @@ function setup() {
   saveToggle.changed(draw); // Redraw the canvas when the checkbox state changes
 
   //total layer slider
-  totalLayersSlider = createSlider(1, 100, 47); // min: 1, max: 100, default: 20
+  totalLayersSlider = createSlider(1, 100, 15); // min: 1, max: 100, default: 20
   totalLayersSlider.position(20, 30);
   totalLayersSliderValue = createElement("h2");
   totalLayersSliderValue.position(5, 30);
@@ -46,7 +46,7 @@ function setup() {
   recomputeButton.position(10, 90);
   recomputeButton.mousePressed(recomputeImage);
 
-  colorToggle = createCheckbox("Use three colors", true);
+  colorToggle = createCheckbox("Use three colors", false);
   colorToggle.position(370, 110);
   colorToggle.style("color", "#ffffff");
 
@@ -54,7 +54,7 @@ function setup() {
 
   //Transition Sliders
   let layers = totalLayersSlider.value();
-  transition1Slider = createSlider(1, layers, 5); // min: 1, max: layers, default: 3
+  transition1Slider = createSlider(1, layers, 3); // min: 1, max: layers, default: 3
   transition1Slider.position(200, 30);
   transition1SliderValue = createElement("h2");
   transition1SliderValue.position(370, 10);
@@ -65,7 +65,7 @@ function setup() {
     transition1SliderValue.html("Transition 1: " + transition1Slider.value());
   });
 
-  transition2Slider = createSlider(1, layers, 20); // min: 1, max: layers, default: 11
+  transition2Slider = createSlider(1, layers, 6); // min: 1, max: layers, default: 11
   transition2Slider.position(200, 50);
   transition2SliderValue = createElement("h2");
   transition2SliderValue.position(370, 30);
@@ -76,7 +76,7 @@ function setup() {
     transition2SliderValue.html("Transition 2: " + transition2Slider.value());
   });
 
-  transition3Slider = createSlider(1, layers, 32); // min: 1, max: layers, default: 19
+  transition3Slider = createSlider(1, layers, 9); // min: 1, max: layers, default: 19
   transition3Slider.position(200, 70); // Position adjusted to be under the other sliders
 
   transition3SliderValue = createElement("h2");
@@ -101,7 +101,7 @@ function imageReady() {
   use_gray = true; // WIP for working with hue threshold
   range = use_gray ? 255 : 360; // rgb vs hue ranges
   factor = 1; // scaling factor for images, use 2 or more if it takes too long
-  layers = 47; // stl model layers
+  layers = 15; // stl model layers
   layer = 1;
   base_color = "black";
 
@@ -186,7 +186,7 @@ function draw() {
       }
 
       if (current_value >= thresh) {
-        let mixFactor = 0.1; // Variable for mix factor
+        let mixFactor = 0.3; // Variable for mix factor
 
         // use this switch-case to setup your layer changes. Add or remove layers and set mix-factor as you wish
         if (colorToggle.checked()) {
