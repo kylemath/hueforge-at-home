@@ -1,5 +1,5 @@
 p5.disableFriendlyErrors = true; //small performance boost
-let img, copy, layer, layers;
+let img, copy, layer, layers, subd;
 let color1Picker, color2Picker, color3Picker;
 let totalLayersSlider;
 let recomputeButton;
@@ -9,7 +9,7 @@ let transition3Slider, transition3SliderValue;
 let colorToggle;
 
 function preload() {
-  let name = "jb.png";
+  let name = "fd.png";
   img = loadImage(name);
   copy = loadImage(name);
 }
@@ -22,8 +22,14 @@ function setup() {
   color2Picker = select("#color2");
   color3Picker = select("#color3"); // New color picker
 
+  // Create the saveToggle checkbox
+  saveToggle = createCheckbox("Show only copy image", false);
+  saveToggle.position(370, 90); // Adjust position to the right of the transition sliders
+  saveToggle.style("color", "#ffffff");
+  saveToggle.changed(draw); // Redraw the canvas when the checkbox state changes
+
   //total layer slider
-  totalLayersSlider = createSlider(1, 100, 20); // min: 1, max: 100, default: 20
+  totalLayersSlider = createSlider(1, 100, 47); // min: 1, max: 100, default: 20
   totalLayersSlider.position(20, 30);
   totalLayersSliderValue = createElement("h2");
   totalLayersSliderValue.position(5, 30);
@@ -31,6 +37,8 @@ function setup() {
   totalLayersSliderValue.html("Total Layers: " + totalLayersSlider.value());
   totalLayersSlider.input(() => {
     totalLayersSliderValue.html("Total Layers: " + totalLayersSlider.value());
+    subd = parseInt(range / totalLayersSlider.value()); // Recalculate subd
+    updateTransitionSlidersMax();
   });
 
   //recompute button
@@ -38,13 +46,15 @@ function setup() {
   recomputeButton.position(10, 90);
   recomputeButton.mousePressed(recomputeImage);
 
-  colorToggle = createCheckbox("Use three colors", false);
-  colorToggle.position(10, 210);
+  colorToggle = createCheckbox("Use three colors", true);
+  colorToggle.position(370, 110);
+  colorToggle.style("color", "#ffffff");
+
   colorToggle.changed(toggleColors);
 
   //Transition Sliders
   let layers = totalLayersSlider.value();
-  transition1Slider = createSlider(1, layers, 3); // min: 1, max: layers, default: 3
+  transition1Slider = createSlider(1, layers, 5); // min: 1, max: layers, default: 3
   transition1Slider.position(200, 30);
   transition1SliderValue = createElement("h2");
   transition1SliderValue.position(370, 10);
@@ -55,7 +65,7 @@ function setup() {
     transition1SliderValue.html("Transition 1: " + transition1Slider.value());
   });
 
-  transition2Slider = createSlider(1, layers, 11); // min: 1, max: layers, default: 11
+  transition2Slider = createSlider(1, layers, 20); // min: 1, max: layers, default: 11
   transition2Slider.position(200, 50);
   transition2SliderValue = createElement("h2");
   transition2SliderValue.position(370, 30);
@@ -66,29 +76,23 @@ function setup() {
     transition2SliderValue.html("Transition 2: " + transition2Slider.value());
   });
 
-  transition3Slider = createSlider(1, layers, 15); // min: 1, max: layers, default: 15
-  transition3Slider.position(200, 70);
+  transition3Slider = createSlider(1, layers, 32); // min: 1, max: layers, default: 19
+  transition3Slider.position(200, 70); // Position adjusted to be under the other sliders
+
   transition3SliderValue = createElement("h2");
-  transition3SliderValue.position(370, 50);
+  transition3SliderValue.position(370, 50); // Position adjusted to be under the other sliders
   transition3SliderValue.style("color", "#ffffff");
   transition3SliderValue.html("Transition 3: " + transition3Slider.value());
-
   transition3Slider.input(() => {
     transition3SliderValue.html("Transition 3: " + transition3Slider.value());
   });
+}
 
-  transition4Slider = createSlider(1, layers, 19); // min: 1, max: layers, default: 19
-  transition4Slider.position(200, 90); // Position adjusted to be under the other sliders
-  transition4Slider.hide(); // Hide the slider initially
-
-  transition4SliderValue = createElement("h2");
-  transition4SliderValue.position(370, 70); // Position adjusted to be under the other sliders
-  transition4SliderValue.style("color", "#ffffff");
-  transition4SliderValue.html("Transition 4: " + transition4Slider.value());
-  transition4SliderValue.hide(); // Hide the value display initially
-  transition4Slider.input(() => {
-    transition4SliderValue.html("Transition 4: " + transition4Slider.value());
-  });
+function updateTransitionSlidersMax() {
+  let layers = totalLayersSlider.value();
+  transition1Slider.elt.max = layers;
+  transition2Slider.elt.max = layers;
+  transition3Slider.elt.max = layers;
 }
 
 function imageReady() {
@@ -97,7 +101,7 @@ function imageReady() {
   use_gray = true; // WIP for working with hue threshold
   range = use_gray ? 255 : 360; // rgb vs hue ranges
   factor = 1; // scaling factor for images, use 2 or more if it takes too long
-  layers = 20; // stl model layers
+  layers = 47; // stl model layers
   layer = 1;
   base_color = "black";
 
@@ -112,12 +116,12 @@ function imageReady() {
 function toggleColors() {
   if (colorToggle.checked()) {
     // Checkbox is checked, show the fourth slider
-    transition4Slider.show();
-    transition4SliderValue.show();
+    transition3Slider.show();
+    transition3SliderValue.show();
   } else {
     // Checkbox is unchecked, hide the fourth slider
-    transition4Slider.hide();
-    transition4SliderValue.hide();
+    transition3Slider.hide();
+    transition3SliderValue.hide();
   }
 }
 
@@ -136,6 +140,17 @@ function recomputeImage() {
 }
 
 function draw() {
+  if (saveToggle.checked()) {
+    // If the checkbox is checked, resize the canvas to fit only the copy image
+    resizeCanvas(copy.width, copy.height);
+    image(copy, 0, 0);
+  } else {
+    // If the checkbox is unchecked, resize the canvas to fit both the original and copy images
+    resizeCanvas(img.width * 2 + 20, img.height);
+    image(img, img.width + 20, 0);
+    image(copy, 0, 0);
+  }
+
   let color1 = color1Picker.value();
   let color2 = color2Picker.value();
   let color3 = color3Picker.value(); // New color
@@ -145,7 +160,6 @@ function draw() {
   let transition1 = transition1Slider.value();
   let transition2 = transition2Slider.value();
   let transition3 = transition3Slider.value();
-  let transition4 = transition4Slider.value();
 
   if (layer <= layers) {
     let thresh = parseInt(subd * (layer - 1)); // threshold to change pixels
@@ -172,40 +186,42 @@ function draw() {
       }
 
       if (current_value >= thresh) {
+        let mixFactor = 0.1; // Variable for mix factor
+
         // use this switch-case to setup your layer changes. Add or remove layers and set mix-factor as you wish
         if (colorToggle.checked()) {
           // Checkbox is checked, use three colors
           switch (true) {
             case layer <= 1:
-              current_color = [base_color, 0.3];
+              current_color = [base_color, mixFactor];
               break;
             case layer <= transition1:
-              current_color = [color1, 0.3];
+              current_color = [color1, mixFactor];
               break;
             case layer <= transition2:
-              current_color = [color2, 0.3];
+              current_color = [color2, mixFactor];
               break;
             case layer <= transition3:
-              current_color = [color3, 0.3]; // New color
+              current_color = [color3, mixFactor]; // New color
               break;
-            case layer <= transition4:
-              current_color = ["white", 0.3];
+            case layer <= layers:
+              current_color = ["white", mixFactor];
               break;
           }
         } else {
           // Checkbox is unchecked, use two colors
           switch (true) {
             case layer <= 1:
-              current_color = [base_color, 0.3];
+              current_color = [base_color, mixFactor];
               break;
             case layer <= transition1:
-              current_color = [color1, 0.3];
+              current_color = [color1, mixFactor];
               break;
             case layer <= transition2:
-              current_color = [color2, 0.3];
+              current_color = [color2, mixFactor];
               break;
-            case layer <= transition3:
-              current_color = ["white", 0.3];
+            case layer <= layers:
+              current_color = ["white", mixFactor];
               break;
           }
         }
@@ -216,7 +232,12 @@ function draw() {
     console.log("Layer " + layer + ", with " + current_color);
     copy.updatePixels();
     image(copy, 0, 0);
-    image(img, img.width + 20, 0);
+    if (saveToggle.checked()) {
+      image(copy, 0, 0);
+    } else {
+      image(img, img.width + 20, 0);
+      image(copy, 0, 0);
+    }
     layer++;
   }
 }
