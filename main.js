@@ -212,16 +212,16 @@ function draw() {
           // Checkbox is unchecked, use two colors
           switch (true) {
             case layer <= 1:
-              current_color = [base_color, mixFactor];
+              current_color = [base_color, 0.5];
               break;
             case layer <= transition1:
-              current_color = [color1, mixFactor];
+              current_color = [color1, 0.5];
               break;
             case layer <= transition2:
-              current_color = [color2, mixFactor];
+              current_color = [color2, 0.2];
               break;
             case layer <= layers:
-              current_color = ["white", mixFactor];
+              current_color = ["white", 0.5];
               break;
           }
         }
